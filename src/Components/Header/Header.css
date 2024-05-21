@@ -1,0 +1,30 @@
+.header-layout{
+    display: flex;
+    justify-content: space-between;
+    border: 2px solid black;
+}
+.logo-wrapper{
+    padding: 10px;
+}
+
+.logo{
+    width: 200px;
+    height: 200px;
+}
+
+.navbar-items-layout{
+display: flex;
+justify-content: center;
+}
+
+.navbar-items-wrapper{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    li{
+        font-size: 20px;
+        font-weight: bold;
+        list-style-type: none;
+        padding: 50px;
+    }
+}

@@ -1,0 +1,36 @@
+.restro-card-wrapper{
+    width: 250px;
+    height: 300px;
+    padding: 20px;
+    cursor: pointer;
+    margin:10px 10px 25px 10px;
+    border-radius: 5px;
+}
+
+.restro-card-wrapper:hover{
+    background-color: #B8DCEA;
+}
+
+.restro-card-body{
+    
+   
+}
+
+.restro-card-image{
+    width: 100%;
+    height: 150px;
+
+}
+
+.restro-card-header{
+    padding-bottom: 10px;
+    height:25%;
+
+}
+
+.restro-card-footer{
+    display: flex;
+    justify-content: space-between;
+    padding-top: 15px;
+    color: grey;
+}

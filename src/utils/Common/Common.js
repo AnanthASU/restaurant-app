@@ -1,0 +1,1 @@
+export const RESTAURANT_LOGO = "https://dw0i2gv3d32l1.cloudfront.net/uploads/stage/stage_image/17759/optimized_product_thumb_stage.jpg";

@@ -1,0 +1,28 @@
+
+.search-bar{
+    display: flex;
+}
+
+.search-input{
+    padding:  7px 40px 7px 5px;
+}
+
+.restro-card-conainer{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.restro-card{
+    display: contents;
+}
+
+.custmoizations{
+    display: flex;
+    gap:50px;
+}
+
+.filters-wrap{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
