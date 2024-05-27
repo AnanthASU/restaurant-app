@@ -1,43 +1,68 @@
 import './Body.css';
-import resData from '../../utils/MockData/ResturantData';
 import React from 'react';
 import Restrocard from '../RestroCard/RestroCard';
 import SortMenu from '../SortMenu/SortMenu';
-import {getNumericRating} from './Helper';
+import {getNumericRating, setOptions} from './Helper';
 import useDebounce from '../../CustomHooks/Debounce';
 import { MagnifyingGlassIcon} from '@heroicons/react/20/solid';
+import useFetch from '../../CustomHooks/Fetch';
+import RestroCardSkeleton from '../../utils/Common/RestroCardSkeleton';
+import usePageBottom from '../../CustomHooks/PageBottom';
 
 function RestaurantBody(){
-    const [restData, setResdata] = React.useState(resData);
     const [searchTerm, setSearchTerm] = React.useState('');
+    const [nextpage, setNextPage] = React.useState("10");
+    const options = React.useMemo(()=>setOptions(nextpage),[nextpage]);
+    const {loading: busy, error, data : rData} = useFetch("https://corsproxy.io/?https://www.swiggy.com/dapi/restaurants/list/update", options);
+    const [restData, setResdata] = React.useState([]);
+    const [loading, setLoading] = React.useState(busy);
+    const emArray = new Array(15).fill(undefined);
+
+    const reachedBottom = usePageBottom();
 
     const debouncedSearchTerm = useDebounce(searchTerm, 400);
 
     const HandleSearch=()=>{
-        const tempData = resData;
-        setResdata(tempData.filter((item) => item.store.title.text.toLocaleUpperCase().includes(debouncedSearchTerm?.toLocaleUpperCase())));
+        const tempData = restData;
+        tempData != undefined && setResdata(tempData.filter((item) => item.info.name.toLocaleUpperCase().includes(debouncedSearchTerm?.toLocaleUpperCase())));
     }
 
     React.useEffect(()=>{
-        if(debouncedSearchTerm != undefined) HandleSearch();
-    },[debouncedSearchTerm, resData]);
+
+            const newData = rData?.data?.cards[0]?.card?.card?.gridElements?.infoWithStyle?.restaurants;
+            newData != undefined && setResdata(prevData => {
+                if (!prevData || !Array.isArray(prevData)) {
+                    return [...newData];
+                } else {
+                    const uniqueNewData = newData.filter(newItem => !prevData.some(prevItem => prevItem.info.id === newItem.info.id));
+                    return [...prevData, ...uniqueNewData];
+                }
+            });
+        console.log(restData,"resData");
+        setLoading(busy);
+        if(debouncedSearchTerm != undefined && debouncedSearchTerm != null  && debouncedSearchTerm != "") HandleSearch();
+        if (reachedBottom) {
+            setNextPage((prev) => String(Number(prev) + 15));
+          }
+    },[debouncedSearchTerm, rData, busy, reachedBottom]);
 
 
     const HandleSort=(id)=>{
         if(id == 1){
-            setResdata((prev)=>{const SortedArray = [...prev].sort((a,b)=> getNumericRating(a.store.tracking.storePayload.etdInfo.dropoffETARange.min) - getNumericRating(b.store.tracking.storePayload.etdInfo.dropoffETARange.min));
+            setResdata((prev)=>{const SortedArray = [...prev].sort((a,b)=> getNumericRating(a.info.sla.slaString) - getNumericRating(b.info.sla.slaString));
                 return SortedArray;
             });
         }
         if(id === 2){
-        setResdata((prev)=>{const SortedArray = [...prev].sort((a,b)=> getNumericRating(b.store.rating?.text) - getNumericRating(a.store.rating?.text));
+        setResdata((prev)=>{const SortedArray = [...prev].sort((a,b)=> getNumericRating(b.info.avgRating) - getNumericRating(a.info.avgRating));
             return SortedArray;
         });
         };
     }
 
     const HandleReset=()=>{
-        setResdata(resData);
+        const tempData = [...rData?.data?.cards[0]?.card?.card?.gridElements?.infoWithStyle?.restaurants];
+        setResdata(tempData);
     }
 
     return(
@@ -52,11 +77,18 @@ function RestaurantBody(){
             </div>
             </div>
             <div className='restro-card-conainer'>
+                { loading ? (
                 <div className='restro-card'>
-                    {restData?.map((item)=>{
-                        return(<Restrocard key={item.uuid} storeData={item} />);
+                    {emArray?.map((_,index)=>{
+                        return (<RestroCardSkeleton key={index}/>)
                     })}
-                </div>
+                </div>) :
+                (<div className='restro-card'>
+                    { restData?.map((item)=>{
+                        return(<Restrocard key={item?.info?.id} storeData={item} />);
+                    })}
+                </div>)}
+                
             </div>
         </div>
     )
