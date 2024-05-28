@@ -8,6 +8,7 @@ import { MagnifyingGlassIcon} from '@heroicons/react/20/solid';
 import useFetch from '../../CustomHooks/Fetch';
 import RestroCardSkeleton from '../../utils/Common/RestroCardSkeleton';
 import usePageBottom from '../../CustomHooks/PageBottom';
+import BannerItems from '../BannerItems/BannerItems';
 
 function RestaurantBody(){
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -15,6 +16,7 @@ function RestaurantBody(){
     const options = React.useMemo(()=>setOptions(nextpage),[nextpage]);
     const {loading: busy, error, data : rData} = useFetch("https://corsproxy.io/?https://www.swiggy.com/dapi/restaurants/list/update", options);
     const [restData, setResdata] = React.useState([]);
+    const [filteredData, setFilteredData] = React.useState([]);
     const [loading, setLoading] = React.useState(busy);
     const emArray = new Array(15).fill(undefined);
 
@@ -24,11 +26,10 @@ function RestaurantBody(){
 
     const HandleSearch=()=>{
         const tempData = restData;
-        tempData != undefined && setResdata(tempData.filter((item) => item.info.name.toLocaleUpperCase().includes(debouncedSearchTerm?.toLocaleUpperCase())));
+        tempData != undefined && setFilteredData(tempData.filter((item) => item.info.name.toLocaleUpperCase().includes(debouncedSearchTerm?.toLocaleUpperCase())));
     }
 
     React.useEffect(()=>{
-
             const newData = rData?.data?.cards[0]?.card?.card?.gridElements?.infoWithStyle?.restaurants;
             newData != undefined && setResdata(prevData => {
                 if (!prevData || !Array.isArray(prevData)) {
@@ -38,7 +39,7 @@ function RestaurantBody(){
                     return [...prevData, ...uniqueNewData];
                 }
             });
-        console.log(restData,"resData");
+            setFilteredData(restData);
         setLoading(busy);
         if(debouncedSearchTerm != undefined && debouncedSearchTerm != null  && debouncedSearchTerm != "") HandleSearch();
         if (reachedBottom) {
@@ -49,20 +50,20 @@ function RestaurantBody(){
 
     const HandleSort=(id)=>{
         if(id == 1){
-            setResdata((prev)=>{const SortedArray = [...prev].sort((a,b)=> getNumericRating(a.info.sla.slaString) - getNumericRating(b.info.sla.slaString));
+            setFilteredData((prev)=>{const SortedArray = [...prev].sort((a,b)=> getNumericRating(a.info.sla.slaString) - getNumericRating(b.info.sla.slaString));
                 return SortedArray;
             });
         }
         if(id === 2){
-        setResdata((prev)=>{const SortedArray = [...prev].sort((a,b)=> getNumericRating(b.info.avgRating) - getNumericRating(a.info.avgRating));
+            setFilteredData((prev)=>{const SortedArray = [...prev].sort((a,b)=> getNumericRating(b.info.avgRating) - getNumericRating(a.info.avgRating));
             return SortedArray;
         });
         };
     }
 
     const HandleReset=()=>{
-        const tempData = [...rData?.data?.cards[0]?.card?.card?.gridElements?.infoWithStyle?.restaurants];
-        setResdata(tempData);
+        const tempData = [...restData];
+        setFilteredData(tempData);
     }
 
     return(
@@ -76,6 +77,9 @@ function RestaurantBody(){
                 <SortMenu HandleSort={HandleSort} HandleReset={HandleReset}/>
             </div>
             </div>
+            <div>
+            <BannerItems />
+            </div>
             <div className='restro-card-conainer'>
                 { loading ? (
                 <div className='restro-card'>
@@ -84,7 +88,7 @@ function RestaurantBody(){
                     })}
                 </div>) :
                 (<div className='restro-card'>
-                    { restData?.map((item)=>{
+                    { filteredData?.map((item)=>{
                         return(<Restrocard key={item?.info?.id} storeData={item} />);
                     })}
                 </div>)}
